@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Make Your Apps Reactive</string>
+
+    <string name="search_title">Search for images...</string>
+    <string name="search_result_header">Results for %1$s</string>
+    <string name="link_copied">Image link copied to clipboard!</string>
+    <string name="title_activity_image_detail">ImageDetailActivity</string>
+    <string name="score">Score: %1$d</string>
+    <string name="transition_name">image_transition</string>
+    <string name="instructions">Search for images up there!</string>
+    <string name="no_images">No Images Found</string>
+    <string name="search_too_short">Search Query Too Short</string>
+</resources>

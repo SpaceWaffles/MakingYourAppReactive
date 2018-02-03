@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General Values -->
+    <dimen name="element_spacing_extra_small">4dp</dimen>
+    <dimen name="element_spacing_small">8dp</dimen>
+    <dimen name="element_spacing_medium_small">10dp</dimen>
+    <dimen name="element_spacing_normal">12dp</dimen>
+    <dimen name="element_spacing_medium_large">16dp</dimen>
+    <dimen name="element_spacing_large">24dp</dimen>
+    <dimen name="element_spacing_larger">36dp</dimen>
+    <dimen name="element_spacing_extra_large">48dp</dimen>
+    <dimen name="element_spacing_super_large">56dp</dimen>
+
+    <!-- Text Values -->
+    <dimen name="header_text_size_normal">22sp</dimen>
+    <dimen name="body_text_size_title">16sp</dimen>
+    <dimen name="text_size_yuge">56sp</dimen>
+
+    <!-- Image Post -->
+    <dimen name="image_height">250dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Instructions -->
+    <dimen name="arrow_size">100dp</dimen>
+</resources>
