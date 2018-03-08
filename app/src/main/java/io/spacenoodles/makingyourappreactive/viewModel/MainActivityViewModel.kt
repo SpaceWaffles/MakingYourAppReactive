@@ -4,6 +4,8 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.spacenoodles.makingyourappreactive.App
@@ -23,6 +25,7 @@ class MainActivityViewModel : ViewModel() {
     init {
         App.component.inject(this)
         state = MutableLiveData()
+        initRx()
         initSearch()
     }
 
@@ -33,6 +36,8 @@ class MainActivityViewModel : ViewModel() {
     var searchQuery = ""
 
     private lateinit var searchEmitter: PublishSubject<String>
+
+    private lateinit var disposables: CompositeDisposable
 
     fun search(query: String) {
         if (searchQuery != query) {
@@ -52,39 +57,45 @@ class MainActivityViewModel : ViewModel() {
         searchEmitter.onNext(searchQuery)
     }
 
+    private fun initRx() {
+        disposables = CompositeDisposable()
+    }
+
     private fun initSearch() {
         searchEmitter = PublishSubject.create<String>()
-        searchEmitter
-                .subscribeOn(Schedulers.io())
-                .debounce(250, TimeUnit.MILLISECONDS)
-                .doOnNext {
-                    if (it.length < 2) {
-                        state.postValue(MainActivityState.tooShort())
+        addSub(
+            searchEmitter
+                    .subscribeOn(Schedulers.io())
+                    .debounce(250, TimeUnit.MILLISECONDS)
+                    .doOnNext {
+                        if (it.length < 2) {
+                            state.postValue(MainActivityState.tooShort())
+                        }
                     }
-                }
-                .filter { it.length > 1 }
-                .doOnNext { state.postValue(MainActivityState.loading()) }
-                .doOnTerminate { state.postValue(MainActivityState.complete()) }
-                .switchMap {
-                    searchForImages(it).toObservable()
-                }
-                .map {
-                    val newData = ImgurResponse(it.data?.filter { item ->
-                        item.images?.isNotEmpty() == true && item.images.first().link.isValidURL()
-                        && item.nsfw == false
-                        && item.images.first().size ?:Long.MAX_VALUE <= 1500000L
-                    })
-                    newData
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext { response ->
-                    updateAdapter(response.data)
-                    state.postValue(MainActivityState.success())
-                }
-                .subscribe({},
-                        {
-                            state.postValue(MainActivityState.error(it))
+                    .filter { it.length > 1 }
+                    .doOnNext { state.postValue(MainActivityState.loading()) }
+                    .doOnTerminate { state.postValue(MainActivityState.complete()) }
+                    .switchMap {
+                        searchForImages(it).toObservable()
+                    }
+                    .map {
+                        val newData = ImgurResponse(it.data?.filter { item ->
+                            item.images?.isNotEmpty() == true && item.images.first().link.isValidURL()
+                            && item.nsfw == false
+                            && item.images.first().size ?:Long.MAX_VALUE <= 1500000L
                         })
+                        newData
+                    }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext { response ->
+                        updateAdapter(response.data)
+                        state.postValue(MainActivityState.success())
+                    }
+                    .subscribe({},
+                            {
+                                state.postValue(MainActivityState.error(it))
+                            })
+        )
     }
 
     private fun updateAdapter(data: List<ImagePost>?) {
@@ -95,5 +106,16 @@ class MainActivityViewModel : ViewModel() {
         } else {
             imagePostAdapter.items = ArrayList()
         }
+    }
+
+    @Synchronized
+    private fun addSub(disposable: Disposable?) {
+        if (disposable == null) return
+        disposables.add(disposable)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!disposables.isDisposed) disposables.dispose()
     }
 }
